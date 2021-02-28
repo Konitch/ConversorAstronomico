@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-import sys, time
+import os
 import mysql.connector
 
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="123", database="conversordb", auth_plugin="mysql_native_password")
@@ -118,7 +118,7 @@ class Interface:
             atualizar_tabela(rows)
         
         def agrupar_tipodata():
-            query = "SELECT numConv, descricao, valorObtido, convDe, convPara, MAX(resultado), dataConv FROM info_conversao WHERE id_Usuario = "+self.conta_id+" GROUP BY dataConv"
+            query = "SELECT a.* FROM (SELECT numConv, descricao, valorObtido, convDe, convPara, resultado, dataConv FROM info_conversao WHERE id_Usuario = "+self.conta_id+" GROUP BY resultado DESC) a GROUP BY dataConv"
             cursor.execute(query)
             rows = cursor.fetchall()
             atualizar_tabela(rows) 
@@ -592,78 +592,55 @@ Feito para a disciplina Banco de Dados, pelo grupo:
 
         loginbg = Canvas(None, width=600, height=300)
         loginbg.create_rectangle(0, 0, 600, 300, fill='#ffffff')
-        loginbg.place(x=0, y=0)
-
+        
         self.textologin = Label(root, text="Usuário:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textologin.place(x=265, y=80)
         self.login = Entry(bd=1, width=30)
-        self.login.place(x=200, y=100)
         self.textosenha = Label(root, text="Senha:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textosenha.place(x=270, y=140)
         self.senha = Entry(bd=1, width=30)
-        self.senha.place(x=200, y=160)
         self.entrar = Button(root, text="Entrar na Conta", font=("Arial", 10, 'bold'), command=login)
-        self.entrar.place(x=240, y=190)
         self.botaoReg = Button(root, text="Registrar Conta", font=("Arial", 10, 'bold'), command=abrir_Registro)
-        self.botaoReg.place(x=240, y=220)
-
+        
         self.textloginlog = Label(root, text="", font=("Arial", 10), background='#ffffff')
-        self.textloginlog.place(x=210, y=250)
+        
+        login_Show()
 
         # Tela de Registro
         
         regbg = Canvas(None, width=600, height=300)
         regbg.create_rectangle(0, 0, 600, 300, fill='#ffffff')
-        regbg.place(x=0, y=0)
-
+        
         self.textoreguser = Label(root, text="Seja bem-vindo, preencha o registro para criar a sua conta.", font=("Arial", 12, 'bold'), background='#ffffff')
-        self.textoreguser.place(x=10, y=10)
-
+        
         self.textusuario = Label(root, text="Usuário:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textusuario.place(x=10, y=50)
         self.reguser = Entry(bd=1, width=30)
-        self.reguser.place(x=10, y=70)
-
+        
         self.textemail = Label(root, text="Email:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textemail.place(x=10, y=90)
         self.regemail = Entry(bd=1, width=30)
-        self.regemail.place(x=10, y=110)
-
+        
         self.textsenha = Label(root, text="Senha:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textsenha.place(x=10, y=130)
         self.regsenha = Entry(bd=1, width=30)
-        self.regsenha.place(x=10, y=150)
         self.textconfirmsenha = Label(root, text="Confirmar Senha:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.textconfirmsenha.place(x=10, y=170)
         self.regconfsenha = Entry(bd=1, width=30)
-        self.regconfsenha.place(x=10, y=190)
-
+        
         self.registrar = Button(root, text="Confirmar Registro", font=("Arial", 10, 'bold'), background='#ffffff', command=registrar_conta)
-        self.registrar.place(x=5, y=210)
         self.voltar = Button(root, text="Voltar", font=("Arial", 10, 'bold'), background='#ffffff',command=fechar_Registro)
-        self.voltar.place(x=145, y=210)
-
+        
         self.textreglog = Label(root, text="", font=("Arial", 10), background='#ffffff')
-        self.textreglog.place(x=10, y=250)
-
+        
         fechar_Registro()
 
         # Consultar Conversões
 
         consbg = Canvas(None, width=600, height=300)
         consbg.create_rectangle(0, 0, 600, 300, fill='#ffffff')
-        consbg.place(x=0, y= 0)
-
+        
         consbgline = Canvas(None, width=8, height=300)
         consbgline.create_rectangle(0, 0, 8, 300, fill='#0b338e', width=0)
-        consbgline.place(x=0, y=0)
-
+        
         self.cabecalho = Label(root, text="Conversões de usuário", font=("Arial", 14, 'bold'), background='#ffffff')
-        self.cabecalho.place(x=20, y=5)
-
+        
         table_base = ttk.Treeview(root, columns=(1, 2, 3, 4, 5, 6, 7), show="headings", height="6")
-        table_base.place(x=13, y=30)
-
+        
         table_base.heading(1, text="N°")
         table_base.column(1, minwidth=0, width=40)
         table_base.heading(2, text="Descrição")
@@ -693,91 +670,63 @@ Feito para a disciplina Banco de Dados, pelo grupo:
         atualizar_tabela(rows)
 
         self.voltar3 = Button(root, text="Voltar", font=("Arial", 10, 'bold'), background='#ffffff', command=fechar_Consulta)
-        self.voltar3.place(x=540, y=265)
-
+        
         q = StringVar()
         self.texto_pesquisa = Label(root, text="Filtrar por descrição:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.texto_pesquisa.place(x=20, y=210)
         self.entrada_pesquisa = Entry(bd=1, textvariable=q)
-        self.entrada_pesquisa.place(x=20, y=230)
         self.botao_pesquisa = Button(root, text="Pesquisar", font=("Arial", 10, 'bold'), background='#ffffff', command=pesquisar_resultados)
-        self.botao_pesquisa.place(x=20, y=255)
         self.botao_limpar = Button(root, text="Limpar", font=("Arial", 10, 'bold'), background='#ffffff', command=limpar_resultados)
-        self.botao_limpar.place(x=95, y=255)
-
+        
         textoid = StringVar()
         textodesc = StringVar()
 
         self.tid = Label(root, text="ID:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.tid.place(x=240, y=190)
         self.tdesc = Label(root, text="Descrição:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.tdesc.place(x=240, y=210)
-
+        
         self.caixa_id = Entry(bd=1, textvariable=textoid)
-        self.caixa_id.place(x=265, y=190)
         self.caixa_desc = Entry(bd=1, textvariable=textodesc)
-        self.caixa_desc.place(x=240, y=230)
-
+        
         self.botao_att = Button(root, text="Editar", font=("Arial", 10, 'bold'), background='#ffffff', command=editar_conversao)
-        self.botao_att.place(x=240, y=260)
         
         self.botao_excluir = Button(root, text="Excluir", font=("Arial", 10, 'bold'), background='#ffffff', command=excluir_conversao)
-        self.botao_excluir.place(x=290, y=260)
         
         textagrupar = Label(None, text="Organizar por:", font=("Arial", 10, 'bold'), background='#ffffff')
-        textagrupar.place(x=425, y=185)
-
+        
         gopt1 = Radiobutton(None, text="ID", font=("Arial", 10, 'bold'), background='#ffffff', command=agrupar_tipoid)
-        gopt1.place(x=425, y=205)
         gopt2 = Radiobutton(None, text="Maior Resultado/Data", font=("Arial", 10, 'bold'), background='#ffffff', command=agrupar_tipodata)
-        gopt2.place(x=425, y=225)
         gopt3 = Radiobutton(None, text="Conversão", font=("Arial", 10, 'bold'), background='#ffffff', command=agrupar_tipoconversao)
-        gopt3.place(x=425, y=245)
-
+        
         fechar_Consulta()
 
         # Processo de Mudar Senha
 
         settbg = Canvas(None, width=600, height=300)
         settbg.create_rectangle(0, 0, 600, 300, fill='#ffffff')
-        settbg.place(x=0, y=0)
-
+        
         settleftbg = Canvas(None, width=240, height=300)
         settleftbg.create_rectangle(0, 0, 240, 300, outline='#6c99e7', fill='#b7cdeb')
-        settleftbg.place(x=0, y=0)
-
+        
         self.info_conta = Label(root, text="Informações do Usuário:", font=("Arial", 11, 'bold'), background='#b7cdeb')
-        self.info_conta.place(x=10, y=10)
-
+        
         self.info_user = Label(root, text="Nome:", font=("Arial", 10, 'bold'), background='#b7cdeb')
-        self.info_user.place(x=10, y=40)
-
+        
         self.info_email = Label(root, text="E-mail:", font=("Arial", 10, 'bold'), background='#b7cdeb')
-        self.info_email.place(x=10, y=60)
-
+        
         self.info_criacaoconta = Label(root, text="Conta criada em:", font=("Arial", 10, 'bold'), background='#b7cdeb')
-        self.info_criacaoconta.place(x=10, y=80)
-
+        
         self.info_NovaSenha = Label(root, text="""     Caso queira mudar de senha, é bem simples!
         Preencha os campos abaixo e confirme.""", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.info_NovaSenha.place(x=250, y=10)
-
+        
         self.text_senhaAntiga = Label(root, text="Senha Antiga:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.text_senhaAntiga.place(x=330, y=70)
         self.senhaAntiga = Entry(bd=1, width=30)
-        self.senhaAntiga.place(x=330, y=90)
-
+        
         self.text_novaSenha = Label(root, text="Nova Senha:", font=("Arial", 10, 'bold'), background='#ffffff')
-        self.text_novaSenha.place(x=330, y=120)
         self.novaSenha = Entry(bd=1, width=30)
-        self.novaSenha.place(x=330, y=140)
-
+        
         self.botaoMudarSenha = Button(None, text="Mudar Senha", font=("Arial", 10, 'bold'), background='#ffffff', command=mudar_senha)
-        self.botaoMudarSenha.place(x=370, y=180)
-
+        
         self.textpasslog = Label(root, text="", font=("Arial", 10), background='#ffffff')
-        self.textpasslog.place(x=370, y=210)
-
+        
         def enter3(e):
             self.voltar2.configure(background='#0b338e')
         
@@ -785,7 +734,6 @@ Feito para a disciplina Banco de Dados, pelo grupo:
             self.voltar2.configure(background='#1c65ef')
 
         self.voltar2 = Button(None, text="Voltar", font=("Arial", 10, 'bold'), background='#1c65ef', command=fechar_Config)
-        self.voltar2.place(x=10, y=265)
         
         self.voltar2.bind("<Enter>", enter3)
         self.voltar2.bind("<Leave>", leave3)
@@ -795,7 +743,9 @@ Feito para a disciplina Banco de Dados, pelo grupo:
 # Execução da Aplicação Geral
 root = Tk()
 root.title("Conversor de Medidas Astronômicas")
-root.iconphoto(False, PhotoImage(file='icon.png'))
+base_folder = os.path.dirname(__file__)
+image_path = os.path.join(base_folder, 'icon.png')
+root.iconphoto(False, PhotoImage(file=image_path))
 root.geometry("600x300")
 root.resizable(width=False, height=False)
 Interface(root)
