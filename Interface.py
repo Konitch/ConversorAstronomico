@@ -5,19 +5,31 @@ from tkinter import messagebox
 import os
 import mysql.connector
 
+# Conectar ao servidor MySQL
+
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="123", database="conversordb", auth_plugin="mysql_native_password")
 cursor = mydb.cursor()
 
+#=============================================
+#=============================================
+# SQL Requests + Interface
+#=============================================
+#=============================================
+
 class Interface:
     def __init__(self, master=None):
+
+        # Abaixo mostra o procedimento de registro
+
         def registrar_conta():
-            
+            # Testar condicional para evitar campos vazios ou incorretos
             if self.reguser.get() != '' and self.regemail.get() != '' and self.regsenha.get() != '' and self.regsenha.get() == self.regconfsenha.get():
                 registro_usuario = self.reguser.get()
                 registro_email = self.regemail.get()
                 registro_senha = self.regsenha.get()
                 registro_confirmarsenha = self.regconfsenha.get()
 
+                # Fazer comparativo para encontrar contas com mesmo email ou usuário
                 query = "SELECT nome, email FROM usuario WHERE nome = %s OR email = %s;"
                 cursor.execute(query, (registro_usuario, registro_email))
                 conta_igual = str(cursor.fetchall())
@@ -37,7 +49,8 @@ class Interface:
                 self.textreglog.config(text="Os campos de senha devem estar iguais!")
             else:
                 self.textreglog.config(text="Houve algum erro durante o registro.")
-
+        
+        # Método de mudar senha na interface de configurações
         def mudar_senha():
             senha_antiga = self.senhaAntiga.get()
             nova_senha = self.novaSenha.get()
@@ -45,7 +58,7 @@ class Interface:
             senha = self.senha.get()
 
             if senha == senha_antiga and nova_senha != '' and senha_antiga != '':
-                query = "UPDATE usuario SET senha = %s WHERE nome = %s"
+                query = "UPDATE usuario SET senha = %s WHERE nome = %s" # Atualizar dados senha
                 cursor.execute(query, (nova_senha, usuario))
                 mydb.commit()
                 self.textpasslog.config(text="Requisição completa!")
@@ -54,13 +67,14 @@ class Interface:
             else:
                 self.textpasslog.config(text="Preencha corretamente!")
 
+        # Encontrar a tabela de conversão e aderir um novo resultado
         def add_conversao():
             valor_obtido = self.entrada.get()
             conversao_de = self.convde.get()
             conversao_para = self.convpara.get()
             resultado_conversao = self.widget5.get()
             query = "SELECT MAX(numConv) FROM info_conversao WHERE id_Usuario = "+self.conta_id
-            cursor.execute(query)
+            cursor.execute(query) # Linha acima vai filtrar para o usuário logado
             lista_numid = cursor.fetchall()
             numConv = str(lista_numid[0])
             numConv = numConv.replace('(', '')
@@ -75,6 +89,7 @@ class Interface:
             mydb.commit()
             limpar_resultados()
 
+        # Alterar a descrição da Conversão para organizar
         def editar_conversao():
             id_conversao = self.caixa_id.get()
             descricao_conversao = self.caixa_desc.get()
@@ -87,6 +102,7 @@ class Interface:
             else:
                 return True
         
+        # Dizimar uma linha da tabela a partir do número da conversão
         def excluir_conversao():
             id_conversao = textoid.get()
             if messagebox.askyesno("Confirmar ação de excluir", "Você deseja mesmo excluir os dados dessa conversão?"):
@@ -97,6 +113,7 @@ class Interface:
             else:
                 return True
 
+        # Filtrar resultados pela descrição
         def pesquisar_resultados():
             q2 = q.get()
 
@@ -105,34 +122,42 @@ class Interface:
             rows = cursor.fetchall()
             atualizar_tabela(rows)
 
+        # Voltar tabela ao estado comum
         def limpar_resultados():
             query = "SELECT numConv, descricao, valorObtido, convDe, convPara, resultado, dataConv from info_conversao WHERE id_Usuario = "+self.conta_id
             cursor.execute(query)
             rows = cursor.fetchall()
             atualizar_tabela(rows)
         
+        # Organizar tabela por conversão (ordem alfabética)
         def agrupar_tipoconversao():
             query = "SELECT numConv, descricao, valorObtido, convDe, convPara, resultado, dataConv from info_conversao WHERE id_Usuario = "+self.conta_id+" ORDER BY convDe ASC"
             cursor.execute(query)
             rows = cursor.fetchall()
             atualizar_tabela(rows)
         
+        # Organizar tabela por maior conversão do dia
         def agrupar_tipodata():
             query = "SELECT a.* FROM (SELECT numConv, descricao, valorObtido, convDe, convPara, resultado, dataConv FROM info_conversao WHERE id_Usuario = "+self.conta_id+" GROUP BY resultado DESC) a GROUP BY dataConv"
             cursor.execute(query)
             rows = cursor.fetchall()
             atualizar_tabela(rows) 
 
+        # Organizar tabela por Número de conversão (Padrão)
         def agrupar_tipoid():
             query = "SELECT numConv, descricao, valorObtido, convDe, convPara, resultado, dataConv from info_conversao WHERE id_Usuario = "+self.conta_id+" GROUP BY numConv"
             cursor.execute(query)
             rows = cursor.fetchall()
             atualizar_tabela(rows)
 
+        # Função de auxílio para atualizar consulta da tabela
         def atualizar_tabela(rows):
             table_base.delete(*table_base.get_children())
             for i in rows:
                 table_base.insert('', 'end', values=i)
+
+        # Abaixo funções de abrir e fechar "páginas" da Interface...
+        # Mais abaixo haverá forma MySQL de login
 
         def abrir_Consulta():
             consbg.place(x=0, y= 0)
@@ -297,7 +322,7 @@ class Interface:
 
             self.textreglog.place(x=10, y=250)            
 
-        def selecionar():
+        def selecionar(): # Texto de interação básico
             mark = "-- Seja bem-vindo ao Programa de Conversão para Dados Astronômicos!!"
             self.textlog.config(text=mark)
 
@@ -330,7 +355,11 @@ class Interface:
             self.botaoReg.place(x=240, y=220)
 
             self.textloginlog.place(x=210, y=250)
-
+        #=============================================
+        #=============================================
+        # Método de fazer LOGIN - Importante!
+        #=============================================
+        #=============================================
         def login():
             nome_login = self.login.get()
             senha_login = self.senha.get()
@@ -372,9 +401,10 @@ class Interface:
                 self.botaoReg.place_forget()
                 self.textloginlog.place_forget()
             else:
-                self.textloginlog.config(text="Login ou Senha incorretos!")
-
-            
+                self.textloginlog.config(text="Login ou Senha incorretos!")    
+        #=============================================
+        #=============================================
+        
         # Valores essenciais da conversão
 
         self.convde = StringVar()
@@ -534,7 +564,7 @@ Feito para a disciplina Banco de Dados, pelo grupo:
         
         def leave3(e):
             self.widget2.configure(background='#7a7a7a')
-
+        # Sair
         self.widget2 = Button(None, text="   Sair   ", font=("Arial", 10, 'bold'), command=login_Show)
         self.widget2.place(x = 535, y = 270)
         self.widget2.configure(background='#7a7a7a', highlightcolor='#1c65ef', highlightthickness=5, borderwidth=0)
@@ -547,7 +577,7 @@ Feito para a disciplina Banco de Dados, pelo grupo:
         
         def leave2(e):
             self.widget3.configure(background='#1c65ef')
-
+        # Ajuda
         self.widget3 = Button(root, text="      Ajuda      ", font=("Arial", 10, 'bold'), command=ajuda)
         self.widget3.place(x = 20, y = 270)
         self.widget3.configure(background='#1c65ef', highlightcolor='#1c65ef', highlightthickness=5, borderwidth=0)
@@ -559,11 +589,10 @@ Feito para a disciplina Banco de Dados, pelo grupo:
             self.settbutton.configure(background='#0b338e')
         def leave4(e):
             self.settbutton.configure(background='#1c65ef')
-
+        # Configurações
         self.settbutton = Button(root, text="Configurações", font=("Arial", 10, 'bold'), background='#1c65ef', command=abrir_Config)
         self.settbutton.place(x = 18, y = 230)
         self.settbutton.configure(background='#1c65ef', highlightcolor='#1c65ef', highlightthickness=5, borderwidth=0)
-
 
         self.settbutton.bind("<Enter>", enter4)
         self.settbutton.bind("<Leave>", leave4)
@@ -573,13 +602,15 @@ Feito para a disciplina Banco de Dados, pelo grupo:
         def leave5(e):
             self.searchbutton.configure(background='#1c65ef')
 
+        # Ver conversões / Consultar tabela
         self.searchbutton = Button(root, text="Ver Conversões", font=("Arial", 10, 'bold'), background='#1c65ef', command=abrir_Consulta)
         self.searchbutton.place(x = 15, y = 190)
         self.searchbutton.configure(background='#1c65ef', highlightcolor='#1c65ef', highlightthickness=5, borderwidth=0)
 
-
         self.searchbutton.bind("<Enter>", enter5)
         self.searchbutton.bind("<Leave>", leave5)
+
+        # Botões de converter e resultado
 
         self.widget4 = Button(root, text="Converter!", font=("Arial", 10, 'bold'), command=converter)
         self.widget4.place(x = 180, y = 140)
