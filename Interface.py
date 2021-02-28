@@ -5,7 +5,7 @@ from tkinter import messagebox
 import sys, time
 import mysql.connector
 
-mydb = mysql.connector.connect(host="localhost", user="root", passwd="prismon7k7", database="conversordb", auth_plugin="mysql_native_password")
+mydb = mysql.connector.connect(host="localhost", user="root", passwd="123", database="conversordb", auth_plugin="mysql_native_password")
 cursor = mydb.cursor()
 
 class Interface:
