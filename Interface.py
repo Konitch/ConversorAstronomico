@@ -84,7 +84,12 @@ class Interface:
             numConv = int(numConv) + 1
             descricao_conversao = self.widget_descricao.get()
 
-            query = "INSERT INTO info_conversao(idConv, numConv, id_Usuario, descricao, valorObtido, convDe, convPara, resultado, dataConv) VALUES(NULL, %s, %s, %s, %s, %s, %s, %s, NOW())"
+            query = (
+                "INSERT INTO info_conversao"
+                "(idConv, numConv, id_Usuario, descricao," 
+                "valorObtido, convDe, convPara, resultado, dataConv)"
+                "VALUES(NULL, %s, %s, %s, %s, %s, %s, %s, NOW())"
+                )
             cursor.execute(query, (numConv, self.conta_id, descricao_conversao, valor_obtido, conversao_de, conversao_para, resultado_conversao))
             mydb.commit()
             limpar_resultados()
@@ -773,7 +778,7 @@ Feito para a disciplina Banco de Dados, pelo grupo:
 
 # Execução da Aplicação Geral
 root = Tk()
-root.title("Conversor de Medidas Astronômicas")
+root.title("Conversor de Medidas")
 base_folder = os.path.dirname(__file__)
 image_path = os.path.join(base_folder, 'icon.png')
 root.iconphoto(False, PhotoImage(file=image_path))
